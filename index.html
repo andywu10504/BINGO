@@ -206,7 +206,13 @@ const BANK_EMT = [
 ============================ */
 $(function () {
   if (!loadFromLocal()) {
-    applyModeDefaults();
+    // 沒有舊紀錄時：用預設值填 UI，避免空值變 0
+    applyModeDefaults();          // 先決定預設字體
+    $("#rowsInput").val(ROWS);
+    $("#colsInput").val(COLS);
+    $("#numMin").val(NUM_MIN);
+    $("#numMax").val(NUM_MAX);
+    $("#fontSizeInput").val(CELL_FONT_REM);
     initBoard(getMode());
   }
   bindEvents();
@@ -226,14 +232,42 @@ function applyModeDefaults() {
 }
 
 /* ============================
-   設定讀取
+   設定讀取（已加入防呆）
 ============================ */
 function readSettings() {
-  ROWS = Number($("#rowsInput").val());
-  COLS = Number($("#colsInput").val());
-  NUM_MIN = Number($("#numMin").val());
-  NUM_MAX = Number($("#numMax").val());
-  CELL_FONT_REM = Number($("#fontSizeInput").val());
+  let r   = Number($("#rowsInput").val());
+  let c   = Number($("#colsInput").val());
+  let min = Number($("#numMin").val());
+  let max = Number($("#numMax").val());
+  let f   = Number($("#fontSizeInput").val());
+
+  // 空值或 <=0 時，回到預設
+  if (!r || r < 1) r = PARAMS.DEFAULT_ROWS;
+  if (!c || c < 1) c = PARAMS.DEFAULT_COLS;
+
+  if (!min && min !== 0) min = PARAMS.DEFAULT_MIN;
+  if (!max && max !== 0) max = PARAMS.DEFAULT_MAX;
+  if (max < min) [min, max] = [max, min];
+
+  if (!f || f < 0.5) {
+    // 若沒填或異常，用模式對應的預設字體
+    f = (getMode() === "number")
+        ? PARAMS.DEFAULT_NUMBER_FONT
+        : PARAMS.DEFAULT_QUIZ_FONT;
+  }
+
+  ROWS = r;
+  COLS = c;
+  NUM_MIN = min;
+  NUM_MAX = max;
+  CELL_FONT_REM = f;
+
+  // 回寫 UI，讓欄位保持一致
+  $("#rowsInput").val(ROWS);
+  $("#colsInput").val(COLS);
+  $("#numMin").val(NUM_MIN);
+  $("#numMax").val(NUM_MAX);
+  $("#fontSizeInput").val(CELL_FONT_REM);
 }
 
 /* ============================
@@ -246,19 +280,24 @@ function initBoard(mode, presetCells=null, presetActive=null) {
   const size = ROWS * COLS;
   let data = [];
 
-  if (presetCells) data = presetCells;
-  else if (mode === "number") data = shuffle(range(NUM_MIN, NUM_MAX)).slice(0, size);
-  else if (mode === "quiz-xin") data = shuffle(BANK_XIN).slice(0, size);
-  else if (mode === "quiz-emt") data = shuffle(BANK_EMT).slice(0, size);
+  if (presetCells) {
+    data = presetCells;
+  } else if (mode === "number") {
+    data = shuffle(range(NUM_MIN, NUM_MAX)).slice(0, size);
+  } else if (mode === "quiz-xin") {
+    data = shuffle(BANK_XIN).slice(0, size);
+  } else if (mode === "quiz-emt") {
+    data = shuffle(BANK_EMT).slice(0, size);
+  }
 
-  for (let i=0;i<size;i++) {
+  for (let i=0; i<size; i++) {
     const active = presetActive ? presetActive[i] : false;
 
     $("<div>")
       .addClass("cell")
       .toggleClass("active", active)
       .text(data[i])
-      .css("font-size", CELL_FONT_REM+"rem")
+      .css("font-size", CELL_FONT_REM + "rem")
       .appendTo(board);
   }
 
@@ -309,24 +348,28 @@ function updateLineCount() {
   let count = 0;
   const sel = [];
 
-  for (let r=0;r<ROWS;r++) {
+  for (let r=0; r<ROWS; r++) {
     sel[r] = [];
-    for (let c=0;c<COLS;c++) {
+    for (let c=0; c<COLS; c++) {
       sel[r][c] = $("#board .cell").eq(r*COLS+c).hasClass("active");
     }
   }
 
-  for (let r=0;r<ROWS;r++) if (sel[r].every(v=>v)) count++;
-  for (let c=0;c<COLS;c++) {
+  // 橫
+  for (let r=0; r<ROWS; r++) if (sel[r].every(v=>v)) count++;
+
+  // 直
+  for (let c=0; c<COLS; c++) {
     let ok = true;
-    for (let r=0;r<ROWS;r++) if (!sel[r][c]) ok=false;
+    for (let r=0; r<ROWS; r++) if (!sel[r][c]) ok = false;
     if (ok) count++;
   }
 
-  let d1=true, d2=true;
-  for (let i=0;i<ROWS;i++){
-    if (!sel[i][i]) d1=false;
-    if (!sel[i][COLS-1-i]) d2=false;
+  // 斜
+  let d1 = true, d2 = true;
+  for (let i=0; i<ROWS; i++){
+    if (!sel[i][i]) d1 = false;
+    if (!sel[i][COLS-1-i]) d2 = false;
   }
   if (d1) count++;
   if (d2) count++;
@@ -401,3 +444,5 @@ if ("serviceWorker" in navigator) {
   });
 }
 </script>
+</body>
+</html>
