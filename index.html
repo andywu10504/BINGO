@@ -1,448 +1,553 @@
-<!doctype html>
-<html lang="zh-Hant">
+<!DOCTYPE html>
+<html lang="zh-TW">
 <head>
-  <meta charset="utf-8">
-  <title>BINGO</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BINGO 遊戲</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            background-color: #f8f9fa;
+        }
 
-  <!-- PWA 重要 meta -->
-  <meta name="theme-color" content="#212529">
-  <link rel="manifest" href="manifest.json">
-  <link rel="apple-touch-icon" href="icons/icon-192.png">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="mobile-web-app-capable" content="yes">
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
 
-  <!-- Bootstrap 5 + jQuery -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+        .controls-section {
+            padding: 20px;
+        }
 
-  <!-- Font Awesome -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+        .board-section {
+            flex: 1;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
 
-  <style>
-    body { background: #f8f9fa; padding-top: 20px; }
+        .bingo-board {
+            display: grid;
+            gap: 8px;
+            width: 100%;
+            max-width: 600px;
+            aspect-ratio: 1;
+        }
 
-    .game-container { max-width: 540px; }
+        .bingo-cell {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            border: 2px solid #dee2e6;
+            border-radius: 6px;
+            font-size: clamp(12px, 4vw, 20px);
+            font-weight: bold;
+            cursor: pointer;
+            background-color: white;
+            color: #333;
+            transition: all 0.2s ease;
+            user-select: none;
+            padding: 8px;
+            text-align: center;
+            aspect-ratio: 1;
+            min-height: 0;
+        }
 
-    .board {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 6px;
-      margin-top: 15px;
-      margin-bottom: 15px;
-    }
+        .bingo-cell-icon {
+            font-size: clamp(20px, 8vw, 32px);
+            color: #0d6efd;
+        }
 
-    .cell {
-      aspect-ratio: 1;
-      border-radius: 8px;
-      border: 1px solid #dee2e6;
-      background: #ffffff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 600;
-      cursor: pointer;
-      user-select: none;
-      text-align: center;
-      padding: 4px;
-      transition: background 0.15s ease;
-      overflow: hidden;
-    }
+        .bingo-cell-text {
+            font-size: clamp(10px, 3vw, 14px);
+            line-height: 1.2;
+        }
 
-    .cell.active {
-      background: #ffc107;
-      box-shadow: inset 0 0 0 2px #fd7e14;
-    }
+        .bingo-cell:hover {
+            border-color: #0d6efd;
+            background-color: #f0f7ff;
+        }
 
-    .big-btn {
-      width: 100%;
-      padding: 12px;
-      font-size: 1.2rem;
-      font-weight: 700;
-      margin-bottom: 10px;
-    }
-  </style>
+        .bingo-cell.marked {
+            background-color: #198754;
+            border-color: #198754;
+            color: white;
+        }
+
+        .bingo-cell.marked .bingo-cell-icon {
+            color: white;
+        }
+
+        .status-badge {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .status-badge.bingo {
+            animation: blink 0.6s infinite;
+        }
+
+        @keyframes blink {
+            0%, 49% { opacity: 1; }
+            50%, 100% { opacity: 0.5; }
+        }
+    </style>
 </head>
-
 <body>
-<div class="container d-flex flex-column align-items-center">
-  <div class="game-container w-100">
-    <!-- ===== 遊戲卡片 ===== -->
-    <div class="card shadow-sm">
-      <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
-        <span><i class="fa-solid fa-table-cells-large me-1"></i>BINGO</span>
-        <span class="badge bg-warning text-dark">
-          <i class="fa-solid fa-lines-leaning me-1"></i>
-          目前連線：<span id="lineCount">0</span> 條
-        </span>
-      </div>
-
-      <div class="card-body">
-
-        <!-- 玩法模式 -->
-        <div class="d-flex justify-content-between mb-2">
-          <div class="d-flex align-items-center">
-            <label class="me-2 small text-muted">
-              <i class="fa-solid fa-gear me-1"></i>玩法模式
-            </label>
-            <select id="gameMode" class="form-select form-select-sm">
-              <option value="number">數字 BINGO</option>
-              <option value="quiz-xin">新興救護 BINGO</option>
-              <option value="quiz-emt">EMT BINGO</option>
-            </select>
-          </div>
-
-          <button id="btnClear" class="btn btn-sm btn-outline-secondary">
-            <i class="fa-solid fa-eraser me-1"></i>清除
-          </button>
+    <!-- NavBar -->
+    <nav class="navbar navbar-dark bg-dark">
+        <div class="container-fluid">
+            <span class="navbar-brand mb-0 h1">
+                <i class="fa-solid fa-dice"></i> BINGO 遊戲
+            </span>
+            <button class="btn btn-outline-light" data-bs-toggle="modal" data-bs-target="#settingsModal">
+                <i class="fa-solid fa-gear"></i> 設定
+            </button>
         </div>
+    </nav>
 
-        <!-- 遊戲盤 -->
-        <div id="board" class="board"></div>
-
-        <button id="btnShuffle" class="btn btn-primary big-btn">
-          <i class="fa-solid fa-shuffle me-2"></i>抽卡
-        </button>
-
-      </div>
+    <!-- 設定模態框 -->
+    <div class="modal fade" id="settingsModal" tabindex="-1" aria-labelledby="settingsModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="settingsModalLabel">遊戲設定</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="gameMode" class="form-label">遊戲模式</label>
+                        <select class="form-select" id="gameMode">
+                            <option value="emt">EMT 模式</option>
+                            <option value="numbers">數字模式</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="minNumber" class="form-label">數字最小值</label>
+                        <input type="number" class="form-control" id="minNumber" value="1" min="1">
+                    </div>
+                    <div class="mb-3">
+                        <label for="maxNumber" class="form-label">數字最大值</label>
+                        <input type="number" class="form-control" id="maxNumber" value="75" min="1">
+                    </div>
+                    <div class="mb-3">
+                        <label for="boardCols" class="form-label">列數</label>
+                        <input type="number" class="form-control" id="boardCols" value="5" min="3" max="10">
+                    </div>
+                    <div class="mb-3">
+                        <label for="boardRows" class="form-label">行數</label>
+                        <input type="number" class="form-control" id="boardRows" value="5" min="3" max="10">
+                    </div>
+                    <div class="mb-3">
+                        <label for="winLine" class="form-label">需要完成幾條線才算 BINGO</label>
+                        <input type="number" class="form-control" id="winLine" value="5" min="1" max="20">
+                    </div>
+                    <div class="form-text">
+                        例如：設定 5，代表要累積完成 5 條完整連線才算贏。
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal" id="saveSettingsBtn">保存設定</button>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- ===== 設定 ===== -->
-    <div class="card shadow-sm mt-3 w-100">
-      <div class="card-header d-flex justify-content-between align-items-center">
-        <span><i class="fa-solid fa-sliders me-1"></i>遊戲設定</span>
-        <button class="btn btn-sm btn-outline-secondary"
-                data-bs-toggle="collapse" data-bs-target="#settingsCollapse">
-          <i class="fa-solid fa-angle-down"></i>
-        </button>
-      </div>
-
-      <div class="collapse show" id="settingsCollapse">
-        <div class="card-body bg-light">
-
-          <div class="input-group input-group-sm mb-2">
-            <span class="input-group-text"><i class="fa-solid fa-th me-1"></i>列 x 欄</span>
-            <input id="rowsInput" type="number" class="form-control" min="1" max="10">
-            <span class="input-group-text">x</span>
-            <input id="colsInput" type="number" class="form-control" min="1" max="10">
-          </div>
-
-          <div class="input-group input-group-sm mb-2">
-            <span class="input-group-text"><i class="fa-solid fa-hashtag me-1"></i>範圍</span>
-            <input id="numMin" type="number" class="form-control">
-            <span class="input-group-text">~</span>
-            <input id="numMax" type="number" class="form-control">
-          </div>
-
-          <div class="input-group input-group-sm">
-            <span class="input-group-text"><i class="fa-solid fa-text-height me-1"></i>字體</span>
-            <input id="fontSizeInput" type="number" class="form-control" step="0.1" min="0.5" max="3">
-            <span class="input-group-text">rem</span>
-          </div>
-
-          <small class="text-muted">
-            <i class="fa-regular fa-circle-info me-1 mt-2"></i>按「抽卡」套用設定
-          </small>
-
+    <!-- 主要內容 -->
+    <main class="flex-grow-1 d-flex flex-column">
+        <!-- 第二行：BINGO 版 -->
+        <div class="board-section flex-grow-1">
+            <div class="bingo-board" id="bingoBoard"></div>
         </div>
-      </div>
-    </div>
 
-  </div>
-</div>
-<script>
-/* ============================
-   集中所有參數（唯一要改的地方）
-============================ */
-const PARAMS = {
-  DEFAULT_NUMBER_FONT: 2.5,
-  DEFAULT_QUIZ_FONT: 0.9,
-  DEFAULT_ROWS: 5,
-  DEFAULT_COLS: 5,
-  DEFAULT_MIN: 1,
-  DEFAULT_MAX: 75
-};
+        <!-- 第三行：控制區 -->
+        <div class="controls-section bg-white border-top">
+            <div class="container-fluid text-center">
+                <div class="mb-3">
+                    <span class="badge text-bg-primary status-badge" id="lineStatus">
+                        目前連線數：0 / 5
+                    </span>
+                </div>
 
-const LS_KEY = "BINGO_SAVE_v1";
+                <button class="btn btn-success btn-lg" id="startBtn">
+                    <i class="fa-solid fa-play"></i> 開始遊戲
+                </button>
+            </div>
+        </div>
+    </main>
 
-let ROWS = PARAMS.DEFAULT_ROWS;
-let COLS = PARAMS.DEFAULT_COLS;
-let NUM_MIN = PARAMS.DEFAULT_MIN;
-let NUM_MAX = PARAMS.DEFAULT_MAX;
-let CELL_FONT_REM = 1.1;
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const EMT_ITEMS = [
+            { text: '高醫', icon: 'fa-hospital' },
+            { text: '阮綜合醫院', icon: 'fa-hospital' },
+            { text: '大同醫院', icon: 'fa-hospital' },
+            { text: '下雨天協勤', icon: 'fa-cloud-rain' },
+            { text: '內科OHCA', icon: 'fa-heart' },
+            { text: 'Trauma OHCA', icon: 'fa-user-injured' },
+            { text: '聖功醫院', icon: 'fa-hospital' },
+            { text: '長庚醫院', icon: 'fa-hospital' },
+            { text: '榮民總醫院', icon: 'fa-hospital' },
+            { text: '車上CPR', icon: 'fa-car' },
+            { text: '凱旋醫院', icon: 'fa-hospital' },
+            { text: '民生醫院', icon: 'fa-hospital' },
+            { text: '遇到精神病患', icon: 'fa-brain' },
+            { text: '強制送醫使用約束帶', icon: 'fa-link' },
+            { text: '解鎖燒燙傷', icon: 'fa-fire' },
+            { text: '火警救護', icon: 'fa-fire' },
+            { text: '小飛俠', icon: 'fa-user-secret' },
+            { text: '晴天娃娃', icon: 'fa-sun' },
+            { text: '打撈', icon: 'fa-water' },
+            { text: '明顯死亡(屍僵屍腐)', icon: 'fa-skull' },
+            { text: '明顯死亡(頭首分離)', icon: 'fa-skull' },
+            { text: '急產接生', icon: 'fa-baby' },
+            { text: '脫襪式傷口', icon: 'fa-bandage' },
+            { text: '低血糖', icon: 'fa-flask' },
+            { text: '低血壓', icon: 'fa-heart-pulse' },
+            { text: '瀕死式呼吸', icon: 'fa-lung' },
+            { text: '耳漏鼻漏', icon: 'fa-head-side-virus' },
+            { text: '執行辛辛那提異常', icon: 'fa-brain' },
+            { text: 'EKG', icon: 'fa-heart-pulse' },
+            { text: '血糖', icon: 'fa-flask' },
+            { text: '備IV', icon: 'fa-syringe' },
+            { text: '上頸圈', icon: 'fa-shirt' },
+            { text: '翻身上長背板', icon: 'fa-person-walking' },
+            { text: '破門', icon: 'fa-door-open' },
+            { text: '正確使用器材給氧', icon: 'fa-mask' },
+            { text: 'BVM給氧', icon: 'fa-mask' },
+            { text: '進階呼吸道給氧', icon: 'fa-mask' },
+            { text: '架設LUCAS', icon: 'fa-robot' },
+            { text: '使用電動擔架', icon: 'fa-wheelchair' },
+            { text: '使用搬運椅', icon: 'fa-chair' },
+            { text: '使用傳統擔架', icon: 'fa-stretcher' },
+            { text: '抽吸式護木', icon: 'fa-dumpster' },
+            { text: '斷肢', icon: 'fa-hand' },
+            { text: '發燒', icon: 'fa-thermometer' },
+            { text: '急性心肌梗塞(MI)', icon: 'fa-heart-crack' },
+            { text: '慢性阻塞性肺病(COPD)', icon: 'fa-lungs' },
+            { text: '非OHCA GCS 3分', icon: 'fa-brain' },
+            { text: '一氧化碳中毒', icon: 'fa-fire' },
+            { text: '線上派遣', icon: 'fa-phone' },
+            { text: '醫師線上指導', icon: 'fa-stethoscope' },
+            { text: '酒醉路到', icon: 'fa-bottle-water' },
+            { text: '吸毒過量', icon: 'fa-eye-slash' },
+            { text: '自殘', icon: 'fa-hand-fist' },
+            { text: '同時有3個以上傷患', icon: 'fa-people-group' },
+            { text: '獨自評估患者', icon: 'fa-person' },
+            { text: '獨自處置患者', icon: 'fa-person' },
+            { text: '頭部外傷 GCS小於15', icon: 'fa-head-side-virus' },
+            { text: '骨盆不穩定', icon: 'fa-skeleton' }
+        ];
 
-/* ============================
-   題庫
-============================ */
-const BANK_XIN = [
-  "高醫","阮綜合醫院","大同醫院","下雨天協勤","內科OHCA","Trauma OHCA","聖功醫院",
-  "長庚醫院","榮民總醫院","車上CPR","凱旋醫院","民生醫院","遇到精神病患",
-  "強制送醫使用約束帶","解鎖燒燙傷","火警救護","小飛俠","晴天娃娃","打撈",
-  "明顯死亡(屍僵屍腐)","明顯死亡(頭首分離)","急產接生","脫襪式傷口","低血糖",
-  "低血壓","瀕死式呼吸","耳漏鼻漏","執行辛辛那提異常","EKG","血糖","備IV",
-  "上頸圈","翻身上長背板","破門","正確使用器材給氧","BVM給氧","進階呼吸道給氧",
-  "架設LUCAS","使用電動擔架","使用搬運椅","使用傳統擔架","抽吸式護木","斷肢",
-  "發燒","急性心肌梗塞(MI)","慢性阻塞性肺病（COPD）","非OHCA GCS 3分","一氧化碳中毒",
-  "線上派遣","醫師線上指導","酒醉路到","吸毒過量","自殘","同時有3個以上傷患",
-  "獨自評估患者","獨自處置患者","頭部外傷 GCS小於15","骨盆不穩定"
-];
+        class BingoGame {
+            constructor() {
+                this.boardRows = 5;
+                this.boardCols = 5;
+                this.minNumber = 1;
+                this.maxNumber = 75;
+                this.winLine = 5;
+                this.gameMode = 'numbers';
+                this.numbers = [];
+                this.marked = [];
+                this.gameStarted = false;
 
-const BANK_EMT = [
-  "下雨天協勤","內科OHCA","Trauma OHCA","車上CPR","遇到精神病患",
-  "強制送醫使用約束帶","解鎖燒燙傷","火警救護","小飛俠","晴天娃娃",
-  "打撈","明顯死亡(屍僵屍腐)","明顯死亡(頭首分離)","急產接生","脫襪式傷口",
-  "低血糖","低血壓","瀕死式呼吸","耳漏鼻漏","執行辛辛那提異常","EKG","血糖",
-  "備IV","上頸圈","翻身上長背板","破門","正確使用器材給氧","BVM給氧",
-  "進階呼吸道給氧","架設LUCAS","使用電動擔架","使用搬運椅","使用傳統擔架",
-  "抽吸式護木","斷肢","發燒","急性心肌梗塞(MI)","慢性阻塞性肺病（COPD）",
-  "非OHCA GCS 3分","一氧化碳中毒","線上派遣","醫師線上指導","酒醉路到",
-  "吸毒過量","自殘","同時有3個以上傷患","獨自評估患者","獨自處置患者",
-  "頭部外傷 GCS小於15","骨盆不穩定"
-];
+                this.loadFromLocalStorage();
+                this.init();
+            }
 
-/* ============================
-   初始化
-============================ */
-$(function () {
-  if (!loadFromLocal()) {
-    // 沒有舊紀錄時：用預設值填 UI，避免空值變 0
-    applyModeDefaults();          // 先決定預設字體
-    $("#rowsInput").val(ROWS);
-    $("#colsInput").val(COLS);
-    $("#numMin").val(NUM_MIN);
-    $("#numMax").val(NUM_MAX);
-    $("#fontSizeInput").val(CELL_FONT_REM);
-    initBoard(getMode());
-  }
-  bindEvents();
-});
+            loadFromLocalStorage() {
+                const saved = localStorage.getItem('bingoSettings');
+                if (saved) {
+                    const settings = JSON.parse(saved);
+                    this.boardRows = parseInt(settings.boardRows) || 5;
+                    this.boardCols = parseInt(settings.boardCols) || 5;
+                    this.minNumber = parseInt(settings.minNumber) || 1;
+                    this.maxNumber = parseInt(settings.maxNumber) || 75;
+                    this.winLine = parseInt(settings.winLine) || 5;
+                    this.gameMode = settings.gameMode || 'numbers';
+                }
 
-/* 取得當前模式 */
-function getMode() { return $("#gameMode").val(); }
+                $('#minNumber').val(this.minNumber);
+                $('#maxNumber').val(this.maxNumber);
+                $('#boardCols').val(this.boardCols);
+                $('#boardRows').val(this.boardRows);
+                $('#winLine').val(this.winLine);
+                $('#gameMode').val(this.gameMode);
+            }
 
-/* 不同玩法 → 使用不同預設字體 */
-function applyModeDefaults() {
-  const mode = getMode();
-  CELL_FONT_REM = (mode === "number")
-      ? PARAMS.DEFAULT_NUMBER_FONT
-      : PARAMS.DEFAULT_QUIZ_FONT;
+            saveToLocalStorage() {
+                const settings = {
+                    boardRows: this.boardRows,
+                    boardCols: this.boardCols,
+                    minNumber: this.minNumber,
+                    maxNumber: this.maxNumber,
+                    winLine: this.winLine,
+                    gameMode: this.gameMode
+                };
+                localStorage.setItem('bingoSettings', JSON.stringify(settings));
+            }
 
-  $("#fontSizeInput").val(CELL_FONT_REM);
-}
+            init() {
+                this.loadSettings();
+                this.generateNumbers();
+                this.renderBoard();
+                this.updateLineStatus();
+                this.gameStarted = true;
+                this.bindEvents();
+            }
 
-/* ============================
-   設定讀取（已加入防呆）
-============================ */
-function readSettings() {
-  let r   = Number($("#rowsInput").val());
-  let c   = Number($("#colsInput").val());
-  let min = Number($("#numMin").val());
-  let max = Number($("#numMax").val());
-  let f   = Number($("#fontSizeInput").val());
+            loadSettings() {
+                const minNumber = parseInt($('#minNumber').val(), 10);
+                const maxNumber = parseInt($('#maxNumber').val(), 10);
+                const boardCols = parseInt($('#boardCols').val(), 10);
+                const boardRows = parseInt($('#boardRows').val(), 10);
+                const winLine = parseInt($('#winLine').val(), 10);
+                const gameMode = $('#gameMode').val();
 
-  // 空值或 <=0 時，回到預設
-  if (!r || r < 1) r = PARAMS.DEFAULT_ROWS;
-  if (!c || c < 1) c = PARAMS.DEFAULT_COLS;
+                if (!Number.isNaN(minNumber) && !Number.isNaN(maxNumber) && minNumber < maxNumber) {
+                    this.minNumber = minNumber;
+                    this.maxNumber = maxNumber;
+                }
 
-  if (!min && min !== 0) min = PARAMS.DEFAULT_MIN;
-  if (!max && max !== 0) max = PARAMS.DEFAULT_MAX;
-  if (max < min) [min, max] = [max, min];
+                if (!Number.isNaN(boardCols) && !Number.isNaN(boardRows) && boardCols > 0 && boardRows > 0) {
+                    this.boardCols = boardCols;
+                    this.boardRows = boardRows;
+                }
 
-  if (!f || f < 0.5) {
-    // 若沒填或異常，用模式對應的預設字體
-    f = (getMode() === "number")
-        ? PARAMS.DEFAULT_NUMBER_FONT
-        : PARAMS.DEFAULT_QUIZ_FONT;
-  }
+                if (!Number.isNaN(winLine) && winLine > 0) {
+                    this.winLine = winLine;
+                }
 
-  ROWS = r;
-  COLS = c;
-  NUM_MIN = min;
-  NUM_MAX = max;
-  CELL_FONT_REM = f;
+                this.gameMode = gameMode;
+            }
 
-  // 回寫 UI，讓欄位保持一致
-  $("#rowsInput").val(ROWS);
-  $("#colsInput").val(COLS);
-  $("#numMin").val(NUM_MIN);
-  $("#numMax").val(NUM_MAX);
-  $("#fontSizeInput").val(CELL_FONT_REM);
-}
+            generateNumbers() {
+                const totalCells = this.boardRows * this.boardCols;
+                let items = [];
 
-/* ============================
-   盤面生成
-============================ */
-function initBoard(mode, presetCells=null, presetActive=null) {
-  const board = $("#board").empty();
-  board.css("grid-template-columns", `repeat(${COLS}, 1fr)`);
+                if (this.gameMode === 'numbers') {
+                    const range = this.maxNumber - this.minNumber + 1;
 
-  const size = ROWS * COLS;
-  let data = [];
+                    if (range < totalCells) {
+                        alert('數字範圍不足以填滿所有格子！');
+                        this.numbers = [];
+                        this.marked = [];
+                        return;
+                    }
 
-  if (presetCells) {
-    data = presetCells;
-  } else if (mode === "number") {
-    data = shuffle(range(NUM_MIN, NUM_MAX)).slice(0, size);
-  } else if (mode === "quiz-xin") {
-    data = shuffle(BANK_XIN).slice(0, size);
-  } else if (mode === "quiz-emt") {
-    data = shuffle(BANK_EMT).slice(0, size);
-  }
+                    items = Array.from({ length: range }, (_, i) => ({
+                        text: i + this.minNumber,
+                        icon: ''
+                    }));
+                } else {
+                    if (EMT_ITEMS.length < totalCells) {
+                        alert('EMT 項目不足以填滿所有格子！');
+                        this.numbers = [];
+                        this.marked = [];
+                        return;
+                    }
 
-  for (let i=0; i<size; i++) {
-    const active = presetActive ? presetActive[i] : false;
+                    items = [...EMT_ITEMS];
+                }
 
-    $("<div>")
-      .addClass("cell")
-      .toggleClass("active", active)
-      .text(data[i])
-      .css("font-size", CELL_FONT_REM + "rem")
-      .appendTo(board);
-  }
+                for (let i = items.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [items[i], items[j]] = [items[j], items[i]];
+                }
 
-  updateLineCount();
-  saveToLocal();
-}
+                this.numbers = items.slice(0, totalCells);
+                this.marked = new Array(totalCells).fill(false);
+            }
 
-/* ============================
-   事件
-============================ */
-function bindEvents() {
+            renderBoard() {
+                const board = $('#bingoBoard');
+                board.empty();
 
-  $("#board").on("click", ".cell", function () {
-    $(this).toggleClass("active");
-    updateLineCount();
-    saveToLocal();
-  });
+                board.css('grid-template-columns', `repeat(${this.boardCols}, 1fr)`);
 
-  $("#btnShuffle").on("click", function () {
-    readSettings();
-    applyModeDefaults();
-    initBoard(getMode());
-  });
+                this.numbers.forEach((item, index) => {
+                    const div = $('<div>')
+                        .addClass('bingo-cell')
+                        .attr('data-index', index);
 
-  $("#btnClear").on("click", function () {
-    $(".cell").removeClass("active");
-    updateLineCount();
-    saveToLocal();
-  });
+                    if (this.gameMode === 'numbers') {
+                        div.text(item.text);
+                    } else {
+                        const icon = $('<i>')
+                            .addClass('bingo-cell-icon fa-solid')
+                            .addClass(item.icon);
 
-  $("#gameMode").on("change", function () {
-    applyModeDefaults();
-    readSettings();
-    initBoard(getMode());
-  });
+                        const text = $('<div>')
+                            .addClass('bingo-cell-text')
+                            .text(item.text);
 
-  $("#rowsInput,#colsInput,#numMin,#numMax,#fontSizeInput")
-    .on("change", function () {
-      readSettings();
-      initBoard(getMode());
-    });
-}
+                        div.append(icon, text);
+                    }
 
-/* ============================
-   計算 BINGO 連線
-============================ */
-function updateLineCount() {
-  let count = 0;
-  const sel = [];
+                    if (this.marked[index]) {
+                        div.addClass('marked');
+                    }
 
-  for (let r=0; r<ROWS; r++) {
-    sel[r] = [];
-    for (let c=0; c<COLS; c++) {
-      sel[r][c] = $("#board .cell").eq(r*COLS+c).hasClass("active");
-    }
-  }
+                    board.append(div);
+                });
+            }
 
-  // 橫
-  for (let r=0; r<ROWS; r++) if (sel[r].every(v=>v)) count++;
+            bindEvents() {
+                $('#startBtn').off('click').on('click', () => {
+                    this.startGame();
+                });
 
-  // 直
-  for (let c=0; c<COLS; c++) {
-    let ok = true;
-    for (let r=0; r<ROWS; r++) if (!sel[r][c]) ok = false;
-    if (ok) count++;
-  }
+                $('#saveSettingsBtn').off('click').on('click', () => {
+                    this.loadSettings();
+                    this.generateNumbers();
+                    this.renderBoard();
+                    this.updateLineStatus();
+                    this.gameStarted = true;
+                    this.saveToLocalStorage();
+                });
 
-  // 斜
-  let d1 = true, d2 = true;
-  for (let i=0; i<ROWS; i++){
-    if (!sel[i][i]) d1 = false;
-    if (!sel[i][COLS-1-i]) d2 = false;
-  }
-  if (d1) count++;
-  if (d2) count++;
+                $(document).off('click', '.bingo-cell').on('click', '.bingo-cell', (e) => {
+                    if (!this.gameStarted) {
+                        return;
+                    }
 
-  $("#lineCount").text(count);
-}
+                    const index = parseInt($(e.currentTarget).attr('data-index'), 10);
+                    this.toggleCell(index);
+                });
+            }
 
-/* ============================
-   LocalStorage
-============================ */
-function saveToLocal() {
-  const cells = [];
-  const active = [];
+            startGame() {
+                this.loadSettings();
+                this.generateNumbers();
+                this.renderBoard();
+                this.updateLineStatus();
+                this.gameStarted = true;
+                this.saveToLocalStorage();
+            }
 
-  $(".cell").each(function () {
-    cells.push($(this).text());
-    active.push($(this).hasClass("active"));
-  });
+            toggleCell(index) {
+                if (Number.isNaN(index) || index < 0 || index >= this.marked.length) {
+                    return;
+                }
 
-  const obj = {
-    rows: ROWS, cols: COLS,
-    min: NUM_MIN, max: NUM_MAX,
-    font: CELL_FONT_REM,
-    mode: getMode(),
-    cells, active
-  };
+                this.marked[index] = !this.marked[index];
+                const cell = $(`[data-index="${index}"]`);
 
-  localStorage.setItem(LS_KEY, JSON.stringify(obj));
-}
+                if (this.marked[index]) {
+                    cell.addClass('marked');
+                } else {
+                    cell.removeClass('marked');
+                }
 
-function loadFromLocal() {
-  const raw = localStorage.getItem(LS_KEY);
-  if (!raw) return false;
+                this.saveToLocalStorage();
+                this.checkBingo();
+            }
 
-  try {
-    const d = JSON.parse(raw);
+            getCompletedLineCount() {
+                let completedLines = 0;
 
-    ROWS = d.rows;
-    COLS = d.cols;
-    NUM_MIN = d.min;
-    NUM_MAX = d.max;
-    CELL_FONT_REM = d.font;
+                // 行
+                for (let row = 0; row < this.boardRows; row++) {
+                    let count = 0;
+                    for (let col = 0; col < this.boardCols; col++) {
+                        const index = row * this.boardCols + col;
+                        if (this.marked[index]) {
+                            count++;
+                        }
+                    }
 
-    $("#rowsInput").val(ROWS);
-    $("#colsInput").val(COLS);
-    $("#numMin").val(NUM_MIN);
-    $("#numMax").val(NUM_MAX);
-    $("#fontSizeInput").val(CELL_FONT_REM);
-    $("#gameMode").val(d.mode);
+                    if (count === this.boardCols) {
+                        completedLines++;
+                    }
+                }
 
-    initBoard(d.mode, d.cells, d.active);
-    return true;
-  } catch {
-    return false;
-  }
-}
+                // 列
+                for (let col = 0; col < this.boardCols; col++) {
+                    let count = 0;
+                    for (let row = 0; row < this.boardRows; row++) {
+                        const index = row * this.boardCols + col;
+                        if (this.marked[index]) {
+                            count++;
+                        }
+                    }
 
-/* ============================
-   工具
-============================ */
-function range(a,b){const r=[];for(let i=a;i<=b;i++)r.push(i);return r;}
-function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+                    if (count === this.boardRows) {
+                        completedLines++;
+                    }
+                }
 
-/* ============================
-   PWA Service Worker 註冊
-============================ */
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("sw.js")
-      .then(reg => console.log("ServiceWorker 已註冊:", reg.scope))
-      .catch(err => console.log("SW 註冊失敗:", err));
-  });
-}
-</script>
+                // 對角線只在正方形棋盤下計算
+                if (this.boardRows === this.boardCols) {
+                    let diag1Count = 0;
+                    for (let i = 0; i < this.boardRows; i++) {
+                        const index = i * this.boardCols + i;
+                        if (this.marked[index]) {
+                            diag1Count++;
+                        }
+                    }
+                    if (diag1Count === this.boardRows) {
+                        completedLines++;
+                    }
+
+                    let diag2Count = 0;
+                    for (let i = 0; i < this.boardRows; i++) {
+                        const index = i * this.boardCols + (this.boardCols - 1 - i);
+                        if (this.marked[index]) {
+                            diag2Count++;
+                        }
+                    }
+                    if (diag2Count === this.boardRows) {
+                        completedLines++;
+                    }
+                }
+
+                return completedLines;
+            }
+
+            updateLineStatus() {
+                const completedLines = this.getCompletedLineCount();
+                $('#lineStatus').text(`目前連線數：${completedLines} / ${this.winLine}`);
+
+                if (completedLines >= this.winLine) {
+                    $('#lineStatus')
+                        .removeClass('text-bg-primary')
+                        .addClass('text-bg-success bingo');
+                } else {
+                    $('#lineStatus')
+                        .removeClass('text-bg-success bingo')
+                        .addClass('text-bg-primary');
+                }
+            }
+
+            checkBingo() {
+                const completedLines = this.getCompletedLineCount();
+                this.updateLineStatus();
+
+                if (completedLines >= this.winLine) {
+                    this.winBingo();
+                }
+            }
+
+            winBingo() {
+                this.gameStarted = false;
+                this.saveToLocalStorage();
+                alert(`🎉 BINGO！已完成 ${this.getCompletedLineCount()} 條線！`);
+            }
+        }
+
+        $(document).ready(function () {
+            new BingoGame();
+        });
+    </script>
 </body>
 </html>
