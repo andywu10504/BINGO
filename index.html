@@ -21,54 +21,40 @@
         }
 
         .controls-section {
-            padding: 20px;
+            padding: 16px 20px 20px;
         }
 
         .board-section {
             flex: 1;
-            padding: 20px;
+            padding: 10px 10px 0 10px;
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             justify-content: center;
         }
 
         .bingo-board {
             display: grid;
-            gap: 8px;
+            gap: 6px;
             width: 100%;
-            max-width: 600px;
-            aspect-ratio: 1;
+            max-width: 520px;
+            margin: 0 auto;
         }
 
         .bingo-cell {
+            aspect-ratio: 1;
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            background-color: #fff;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.2s ease;
+            padding: 6px;
+            overflow: hidden;
+
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            gap: 6px;
-            border: 2px solid #dee2e6;
-            border-radius: 6px;
-            font-size: clamp(12px, 4vw, 20px);
-            font-weight: bold;
-            cursor: pointer;
-            background-color: white;
-            color: #333;
-            transition: all 0.2s ease;
-            user-select: none;
-            padding: 8px;
-            text-align: center;
-            aspect-ratio: 1;
-            min-height: 0;
-        }
-
-        .bingo-cell-icon {
-            font-size: clamp(20px, 8vw, 32px);
-            color: #0d6efd;
-        }
-
-        .bingo-cell-text {
-            font-size: clamp(10px, 3vw, 14px);
-            line-height: 1.2;
+            justify-content: flex-start;
         }
 
         .bingo-cell:hover {
@@ -79,11 +65,60 @@
         .bingo-cell.marked {
             background-color: #198754;
             border-color: #198754;
-            color: white;
         }
 
-        .bingo-cell.marked .bingo-cell-icon {
-            color: white;
+        .bingo-cell-number {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: clamp(18px, 5vw, 28px);
+            font-weight: bold;
+            color: #333;
+            text-align: center;
+        }
+
+        .bingo-cell.marked .bingo-cell-number {
+            color: #fff;
+        }
+
+        .bingo-cell-icon-wrap {
+            height: 42%;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex: 0 0 42%;
+        }
+
+        .bingo-cell-icon {
+            font-size: clamp(20px, 5vw, 34px);
+            line-height: 1;
+            display: block;
+        }
+
+        .bingo-cell-text {
+            height: 58%;
+            width: 100%;
+            flex: 0 0 58%;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            text-align: center;
+            font-size: clamp(11px, 2.5vw, 15px);
+            line-height: 1.15;
+            word-break: break-word;
+            overflow: hidden;
+            padding: 0 2px;
+            color: #212529;
+        }
+
+        .bingo-cell.marked .bingo-cell-icon,
+        .bingo-cell.marked .bingo-cell-text {
+            color: #fff !important;
         }
 
         .status-badge {
@@ -99,10 +134,98 @@
             0%, 49% { opacity: 1; }
             50%, 100% { opacity: 0.5; }
         }
+
+        /* EMT icon 顏色 */
+        .fa-heart,
+        .fa-heart-crack,
+        .fa-heart-pulse {
+            color: #dc3545;
+        }
+
+        .fa-fire,
+        .fa-cloud-rain,
+        .fa-sun {
+            color: #fd7e14;
+        }
+
+        .fa-brain,
+        .fa-head-side-virus {
+            color: #6f42c1;
+        }
+
+        .fa-hospital,
+        .fa-stethoscope,
+        .fa-phone {
+            color: #0d6efd;
+        }
+
+        .fa-mask,
+        .fa-syringe,
+        .fa-flask,
+        .fa-robot {
+            color: #198754;
+        }
+
+        .fa-car,
+        .fa-chair,
+        .fa-stretcher,
+        .fa-wheelchair,
+        .fa-door-open,
+        .fa-link,
+        .fa-shirt,
+        .fa-skeleton,
+        .fa-person-walking {
+            color: #6c757d;
+        }
+
+        .fa-baby {
+            color: #d63384;
+        }
+
+        .fa-skull {
+            color: #343a40;
+        }
+
+        .fa-lung {
+            color: #0dcaf0;
+        }
+
+        .fa-water,
+        .fa-dumpster,
+        .fa-bottle-water,
+        .fa-eye-slash,
+        .fa-hand,
+        .fa-hand-fist,
+        .fa-people-group,
+        .fa-person,
+        .fa-user-secret,
+        .fa-user-injured,
+        .fa-thermometer {
+            color: #0d6efd;
+        }
+
+        @media (max-width: 576px) {
+            .board-section {
+                padding: 8px 8px 0 8px;
+            }
+
+            .bingo-board {
+                gap: 5px;
+            }
+
+            .bingo-cell {
+                padding: 4px;
+                border-radius: 8px;
+            }
+
+            .bingo-cell-text {
+                font-size: clamp(10px, 2.8vw, 13px);
+                line-height: 1.1;
+            }
+        }
     </style>
 </head>
 <body>
-    <!-- NavBar -->
     <nav class="navbar navbar-dark bg-dark">
         <div class="container-fluid">
             <span class="navbar-brand mb-0 h1">
@@ -114,7 +237,6 @@
         </div>
     </nav>
 
-    <!-- 設定模態框 -->
     <div class="modal fade" id="settingsModal" tabindex="-1" aria-labelledby="settingsModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -130,26 +252,32 @@
                             <option value="numbers">數字模式</option>
                         </select>
                     </div>
+
                     <div class="mb-3">
                         <label for="minNumber" class="form-label">數字最小值</label>
                         <input type="number" class="form-control" id="minNumber" value="1" min="1">
                     </div>
+
                     <div class="mb-3">
                         <label for="maxNumber" class="form-label">數字最大值</label>
                         <input type="number" class="form-control" id="maxNumber" value="75" min="1">
                     </div>
+
                     <div class="mb-3">
                         <label for="boardCols" class="form-label">列數</label>
                         <input type="number" class="form-control" id="boardCols" value="5" min="3" max="10">
                     </div>
+
                     <div class="mb-3">
                         <label for="boardRows" class="form-label">行數</label>
                         <input type="number" class="form-control" id="boardRows" value="5" min="3" max="10">
                     </div>
+
                     <div class="mb-3">
                         <label for="winLine" class="form-label">需要完成幾條線才算 BINGO</label>
                         <input type="number" class="form-control" id="winLine" value="5" min="1" max="20">
                     </div>
+
                     <div class="form-text">
                         例如：設定 5，代表要累積完成 5 條完整連線才算贏。
                     </div>
@@ -162,14 +290,11 @@
         </div>
     </div>
 
-    <!-- 主要內容 -->
     <main class="flex-grow-1 d-flex flex-column">
-        <!-- 第二行：BINGO 版 -->
         <div class="board-section flex-grow-1">
             <div class="bingo-board" id="bingoBoard"></div>
         </div>
 
-        <!-- 第三行：控制區 -->
         <div class="controls-section bg-white border-top">
             <div class="container-fluid text-center">
                 <div class="mb-3">
@@ -256,7 +381,7 @@
                 this.minNumber = 1;
                 this.maxNumber = 75;
                 this.winLine = 5;
-                this.gameMode = 'numbers';
+                this.gameMode = 'emt';
                 this.numbers = [];
                 this.marked = [];
                 this.gameStarted = false;
@@ -268,13 +393,17 @@
             loadFromLocalStorage() {
                 const saved = localStorage.getItem('bingoSettings');
                 if (saved) {
-                    const settings = JSON.parse(saved);
-                    this.boardRows = parseInt(settings.boardRows) || 5;
-                    this.boardCols = parseInt(settings.boardCols) || 5;
-                    this.minNumber = parseInt(settings.minNumber) || 1;
-                    this.maxNumber = parseInt(settings.maxNumber) || 75;
-                    this.winLine = parseInt(settings.winLine) || 5;
-                    this.gameMode = settings.gameMode || 'numbers';
+                    try {
+                        const settings = JSON.parse(saved);
+                        this.boardRows = parseInt(settings.boardRows, 10) || 5;
+                        this.boardCols = parseInt(settings.boardCols, 10) || 5;
+                        this.minNumber = parseInt(settings.minNumber, 10) || 1;
+                        this.maxNumber = parseInt(settings.maxNumber, 10) || 75;
+                        this.winLine = parseInt(settings.winLine, 10) || 5;
+                        this.gameMode = settings.gameMode || 'emt';
+                    } catch (error) {
+                        console.warn('讀取設定失敗，改用預設值。', error);
+                    }
                 }
 
                 $('#minNumber').val(this.minNumber);
@@ -328,7 +457,7 @@
                     this.winLine = winLine;
                 }
 
-                this.gameMode = gameMode;
+                this.gameMode = gameMode || 'emt';
             }
 
             generateNumbers() {
@@ -346,7 +475,7 @@
                     }
 
                     items = Array.from({ length: range }, (_, i) => ({
-                        text: i + this.minNumber,
+                        text: String(i + this.minNumber),
                         icon: ''
                     }));
                 } else {
@@ -372,17 +501,22 @@
             renderBoard() {
                 const board = $('#bingoBoard');
                 board.empty();
-
                 board.css('grid-template-columns', `repeat(${this.boardCols}, 1fr)`);
 
                 this.numbers.forEach((item, index) => {
-                    const div = $('<div>')
+                    const cell = $('<div>')
                         .addClass('bingo-cell')
                         .attr('data-index', index);
 
                     if (this.gameMode === 'numbers') {
-                        div.text(item.text);
+                        const numberText = $('<div>')
+                            .addClass('bingo-cell-number')
+                            .text(item.text);
+
+                        cell.append(numberText);
                     } else {
+                        const iconWrap = $('<div>').addClass('bingo-cell-icon-wrap');
+
                         const icon = $('<i>')
                             .addClass('bingo-cell-icon fa-solid')
                             .addClass(item.icon);
@@ -391,14 +525,15 @@
                             .addClass('bingo-cell-text')
                             .text(item.text);
 
-                        div.append(icon, text);
+                        iconWrap.append(icon);
+                        cell.append(iconWrap, text);
                     }
 
                     if (this.marked[index]) {
-                        div.addClass('marked');
+                        cell.addClass('marked');
                     }
 
-                    board.append(div);
+                    board.append(cell);
                 });
             }
 
@@ -441,7 +576,7 @@
                 }
 
                 this.marked[index] = !this.marked[index];
-                const cell = $(`[data-index="${index}"]`);
+                const cell = $(`.bingo-cell[data-index="${index}"]`);
 
                 if (this.marked[index]) {
                     cell.addClass('marked');
@@ -456,7 +591,6 @@
             getCompletedLineCount() {
                 let completedLines = 0;
 
-                // 行
                 for (let row = 0; row < this.boardRows; row++) {
                     let count = 0;
                     for (let col = 0; col < this.boardCols; col++) {
@@ -465,13 +599,11 @@
                             count++;
                         }
                     }
-
                     if (count === this.boardCols) {
                         completedLines++;
                     }
                 }
 
-                // 列
                 for (let col = 0; col < this.boardCols; col++) {
                     let count = 0;
                     for (let row = 0; row < this.boardRows; row++) {
@@ -480,13 +612,11 @@
                             count++;
                         }
                     }
-
                     if (count === this.boardRows) {
                         completedLines++;
                     }
                 }
 
-                // 對角線只在正方形棋盤下計算
                 if (this.boardRows === this.boardCols) {
                     let diag1Count = 0;
                     for (let i = 0; i < this.boardRows; i++) {
