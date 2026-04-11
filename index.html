@@ -15,18 +15,19 @@
         }
 
         main {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
+            display: block;
         }
 
         .controls-section {
-            padding: 16px 20px 20px;
+            padding: 8px 20px 12px;
+        }
+
+        .controls-section .mb-3 {
+            margin-bottom: 8px !important;
         }
 
         .board-section {
-            flex: 1;
-            padding: 10px 10px 0 10px;
+            padding: 10px 10px 8px 10px;
             display: flex;
             align-items: flex-start;
             justify-content: center;
@@ -102,11 +103,9 @@
             height: 58%;
             width: 100%;
             flex: 0 0 58%;
-
             display: flex;
             align-items: center;
             justify-content: center;
-
             text-align: center;
             font-size: clamp(11px, 2.5vw, 15px);
             line-height: 1.15;
@@ -135,7 +134,6 @@
             50%, 100% { opacity: 0.5; }
         }
 
-        /* EMT icon 顏色 */
         .fa-heart,
         .fa-heart-crack,
         .fa-heart-pulse {
@@ -206,7 +204,7 @@
 
         @media (max-width: 576px) {
             .board-section {
-                padding: 8px 8px 0 8px;
+                padding: 8px 8px 6px 8px;
             }
 
             .bingo-board {
@@ -221,6 +219,10 @@
             .bingo-cell-text {
                 font-size: clamp(10px, 2.8vw, 13px);
                 line-height: 1.1;
+            }
+
+            .controls-section {
+                padding: 6px 16px 10px;
             }
         }
     </style>
@@ -290,8 +292,8 @@
         </div>
     </div>
 
-    <main class="flex-grow-1 d-flex flex-column">
-        <div class="board-section flex-grow-1">
+    <main>
+        <div class="board-section">
             <div class="bingo-board" id="bingoBoard"></div>
         </div>
 
